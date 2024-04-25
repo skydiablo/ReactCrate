@@ -1,0 +1,19 @@
+{
+    "name": "skydiablo/react-crate",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "SkyDiablo\\ReactCrate\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "SkyDiablo",
+            "email": "skydiablo@gmx.net"
+        }
+    ],
+    "require": {
+        "react/http": "^1.10"
+    }
+}
