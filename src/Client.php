@@ -4,6 +4,7 @@ namespace SkyDiablo\ReactCrate;
 
 use Psr\Http\Message\ResponseInterface;
 use React\Http\Browser;
+use React\Http\Message\ResponseException;
 use React\Promise\PromiseInterface;
 use React\Socket\Connector;
 use SkyDiablo\ReactCrate\Exceptions\CrateResponseException;
@@ -50,8 +51,10 @@ class Client
      * @return array
      * @throws CrateResponseException
      */
-    protected function handleResponse(array $dbResponse): array
+    protected function handleResponse(ResponseInterface $response)
     {
+        $dbResponse = json_decode($response->getBody()->getContents(), true);
+
         if (isset($dbResponse['error'])) {
             throw new CrateResponseException($dbResponse['error']['message'], $dbResponse['error']['code']);
         }
@@ -65,14 +68,14 @@ class Client
      */
     public function query(string $statement, array $arguments = []): PromiseInterface
     {
+
         return $this->connection->post(
             '?types', // "types", @see https://cratedb.com/docs/crate/reference/en/master/interfaces/http.html#column-types
             $this->defaultHeaders(),
             $this->prepareStatement($statement, $arguments)
-        )->then(function (ResponseInterface $response) {
-            $dbResponse = json_decode($response->getBody()->getContents(), true);
-            return $this->handleResponse($dbResponse);
-        });
+        )
+            ->then(fn(ResponseInterface $response) => $this->handleResponse($response))
+            ->catch(fn(ResponseException $e) => $this->handleResponse($e->getResponse()));
     }
 
 

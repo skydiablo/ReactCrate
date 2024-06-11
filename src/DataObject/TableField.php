@@ -69,14 +69,17 @@ class TableField
 
     public function __toString(): string
     {
-        $result = $this->options[self::OPTION_NAME] . ' ' . $this->options[self::OPTION_TYPE]->name;
+        $result = $this->options[self::OPTION_NAME] . ' ' . $this->options[self::OPTION_TYPE]->value;
         switch ($this->options[self::OPTION_TYPE]) {
             case DataType::VARCHAR:
             case DataType::CHARACTER:
             case DataType::CHAR:
             case DataType::BIT:
-            case DataType::FLOAT_VECTOR:
                 $result .= sprintf('(%d)', $this->options[self::OPTION_LENGTH] ?? throw new \InvalidArgumentException(sprintf('Missing "%s" option', self::OPTION_LENGTH)));
+                break;
+            case DataType::FLOAT_VECTOR:
+                //TODO: special case, not supported yet!
+                throw new \InvalidArgumentException($this->options[self::OPTION_TYPE]->value . ' currently not supported!');
                 break;
             case DataType::NUMERIC:
                 throw new \InvalidArgumentException(sprintf('Type "%s" is not supported as table field', $this->options[self::OPTION_TYPE]->name));

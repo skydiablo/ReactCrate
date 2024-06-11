@@ -50,7 +50,7 @@ class Table
 
     public function __toString(): string
     {
-        $implodedFields = implode(",\n", $this->options[self::OPTION_FIELDS] ?? []);
+        $implodedFields = implode(', ', $this->options[self::OPTION_FIELDS] ?? []);
         $query = sprintf('CREATE TABLE %s%s (%s)',
             ($this->options[self::OPTION_IF_NOT_EXISTS] ?? false) ? 'IF NOT EXISTS ' : '',
             $this->options[self::OPTION_TABLE_NAME],
