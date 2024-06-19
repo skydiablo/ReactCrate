@@ -3,20 +3,13 @@ declare(strict_types=1);
 
 namespace SkyDiablo\ReactCrate\DataObject\IoT;
 
-class BulkMeasurement
+class BulkMeasurement extends \ArrayObject
 {
-
-    protected array $bulk = [];
 
     public function add(Measurement $measurement): static
     {
-        $this->bulk[] = $measurement;
+        $this[] = $measurement;
         return $this;
-    }
-
-    public function getBulk(): array
-    {
-        return $this->bulk;
     }
 
 }

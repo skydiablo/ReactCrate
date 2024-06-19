@@ -44,7 +44,7 @@ class IoT
         $query = sprintf(self::INSERT_QUERY, $this->table);
         $values = array_map(function (Measurement $measurement) {
             return $this->gatherInsertData($measurement, fn() => new \DateTime());
-        }, $bulkMeasurement->getBulk());
+        }, (array)$bulkMeasurement);
         return $this->client->query($query, $values);
     }
 
