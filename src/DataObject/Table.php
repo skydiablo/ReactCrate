@@ -11,6 +11,7 @@ class Table
     protected const string OPTION_TABLE_NAME = 'table_name';
     protected const string OPTION_FIELDS = 'fields';
     protected const string OPTION_IF_NOT_EXISTS = 'if_not_exists';
+    protected const string OPTION_PARTITIONED_BY = 'partitioned_by';
 
 
     protected Client $client;
@@ -48,13 +49,20 @@ class Table
         return $this;
     }
 
+    public function partitionedBy(TableField $field)
+    {
+        $this->options[self::OPTION_PARTITIONED_BY] = $field->getName();
+        return $this;
+    }
+
     public function __toString(): string
     {
         $implodedFields = implode(', ', $this->options[self::OPTION_FIELDS] ?? []);
-        $query = sprintf('CREATE TABLE %s%s (%s)',
+        $query = sprintf('CREATE TABLE %s%s (%s) %s',
             ($this->options[self::OPTION_IF_NOT_EXISTS] ?? false) ? 'IF NOT EXISTS ' : '',
             $this->options[self::OPTION_TABLE_NAME],
-            $implodedFields
+            $implodedFields,
+            ($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? 'PARTITIONED BY ' . $field : ''
         );
         return $query;
     }
