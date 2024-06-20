@@ -16,8 +16,9 @@ class IoT
            "ts" TIMESTAMP WITHOUT TIME ZONE,
            "measurement" TEXT,
            "tags" OBJECT(DYNAMIC),
-           "fields" OBJECT(DYNAMIC)
-        )';
+           "fields" OBJECT(DYNAMIC),
+           "month" TIMESTAMP GENERATED ALWAYS AS DATE_TRUNC(‘month’, “ts”)
+        ) PARTITIONED BY (month);';
     protected const string INSERT_QUERY = 'INSERT INTO "doc"."%s" ("ts", "measurement", "tags", "fields") VALUES (?, ?, ?, ?)';
 
     /**
