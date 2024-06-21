@@ -37,12 +37,12 @@ class IoT
             ->field((new TableField())->name('measurement')->type(DataType::TEXT))
             ->field((new TableField())->name('tags')->type(DataType::OBJECT))
             ->field((new TableField())->name('fields')->type(DataType::OBJECT))
-            ->field($monthField = (new TableField())
-                ->name('month')
+            ->field($partitionField = (new TableField())
+                ->name('partition_field')
                 ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
                 ->generatedAlwaysAs(new DateTrunc(DateTruncInterval::month, $tsField))
             )
-            ->partitionedBy($monthField);
+            ->partitionedBy($partitionField);
 
         return $this->client->query((string)$table);
     }
