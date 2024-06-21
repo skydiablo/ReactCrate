@@ -16,6 +16,7 @@ class TableField
     protected const string OPTION_CONSTRAINT = 'constraint'; // string
     protected const string OPTION_GENERATED_ALWAYS_AS = 'generated_always_as';
     protected const string OPTION_AS = 'as';
+    protected const string OPTION_DEFAULT = 'default'; // mixed
 
     protected array $options;
 
@@ -82,6 +83,12 @@ class TableField
         return $this;
     }
 
+    public function default(FunctionDefinition $value): self
+    {
+        $this->options[self::OPTION_DEFAULT] = $value;
+        return $this;
+    }
+
     public function __toString(): string
     {
         $result = '"'.$this->options[self::OPTION_NAME] . '" ' . $this->options[self::OPTION_TYPE]->value;
@@ -102,7 +109,9 @@ class TableField
             $result .= ' NOT NULL';
         }
 
-        if ($this->options[self::OPTION_GENERATED_ALWAYS_AS] ?? false) {
+        if ($this->options[self::OPTION_DEFAULT] ?? false) {
+            $result .= ' DEFAULT ' . $this->options[self::OPTION_DEFAULT];
+        } elseif ($this->options[self::OPTION_GENERATED_ALWAYS_AS] ?? false) {
             $result .= ' GENERATED ALWAYS AS (' . $this->options[self::OPTION_GENERATED_ALWAYS_AS] . ')';
         }
 

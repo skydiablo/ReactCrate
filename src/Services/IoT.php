@@ -7,6 +7,7 @@ use React\Promise\PromiseInterface;
 use SkyDiablo\ReactCrate\Client;
 use SkyDiablo\ReactCrate\DataObject\IoT\BulkMeasurement;
 use SkyDiablo\ReactCrate\DataObject\IoT\Measurement;
+use SkyDiablo\ReactCrate\DBAL\Functions\CurrentTimestamp;
 use SkyDiablo\ReactCrate\DBAL\Functions\DateTrunc;
 use SkyDiablo\ReactCrate\DBAL\Functions\Enums\DateTruncInterval;
 use SkyDiablo\ReactCrate\DBAL\Table\Enums\DataType;
@@ -33,8 +34,17 @@ class IoT
         $table
             ->name($this->table)
             ->ifNotExists(true)
-            ->field($tsField = (new TableField())->name('ts')->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE))
-            ->field((new TableField())->name('measurement')->type(DataType::TEXT))
+            ->field($tsField = (new TableField())
+                ->name('ts')
+                ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
+                ->nullable(false)
+                ->default(new CurrentTimestamp())
+            )
+            ->field((new TableField())
+                ->name('measurement')
+                ->type(DataType::TEXT)
+                ->nullable(false)
+            )
             ->field((new TableField())->name('tags')->type(DataType::OBJECT))
             ->field((new TableField())->name('fields')->type(DataType::OBJECT))
             ->field($partitionField = (new TableField())
