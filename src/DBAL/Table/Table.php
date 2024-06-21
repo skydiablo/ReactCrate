@@ -50,7 +50,7 @@ class Table
 
     public function partitionedBy(TableField $field): static
     {
-        $this->options[self::OPTION_PARTITIONED_BY] = $field->getName();
+        $this->options[self::OPTION_PARTITIONED_BY] = $field;
         return $this;
     }
 
