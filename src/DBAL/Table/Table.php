@@ -1,6 +1,6 @@
 <?php
 
-namespace SkyDiablo\ReactCrate\DataObject;
+namespace SkyDiablo\ReactCrate\DBAL\Table;
 
 /**
  * @todo: add all missing features: https://cratedb.com/docs/crate/reference/en/latest/sql/statements/create-table.html#sql-create-table
@@ -14,7 +14,6 @@ class Table
     protected const string OPTION_PARTITIONED_BY = 'partitioned_by';
 
 
-    protected Client $client;
     protected array $options = [];
 
     public static function create(string $name): self
@@ -49,7 +48,7 @@ class Table
         return $this;
     }
 
-    public function partitionedBy(TableField $field)
+    public function partitionedBy(TableField $field): static
     {
         $this->options[self::OPTION_PARTITIONED_BY] = $field->getName();
         return $this;
@@ -62,7 +61,7 @@ class Table
             ($this->options[self::OPTION_IF_NOT_EXISTS] ?? false) ? 'IF NOT EXISTS ' : '',
             $this->options[self::OPTION_TABLE_NAME],
             $implodedFields,
-            ($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? 'PARTITIONED BY ' . $field : ''
+            ($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? 'PARTITIONED BY "' . $field->getName() . '"' : ''
         );
         return $query;
     }
