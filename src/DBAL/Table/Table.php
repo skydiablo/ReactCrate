@@ -61,7 +61,7 @@ class Table
             ($this->options[self::OPTION_IF_NOT_EXISTS] ?? false) ? 'IF NOT EXISTS ' : '',
             $this->options[self::OPTION_TABLE_NAME],
             $implodedFields,
-            ($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? 'PARTITIONED BY "' . $field->getName() . '"' : ''
+            ($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? 'PARTITIONED BY ("' . $field->getName() . '")' : ''
         );
         return $query;
     }

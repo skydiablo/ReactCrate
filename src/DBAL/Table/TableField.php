@@ -84,7 +84,7 @@ class TableField
 
     public function __toString(): string
     {
-        $result = $this->options[self::OPTION_NAME] . ' ' . $this->options[self::OPTION_TYPE]->value;
+        $result = '"'.$this->options[self::OPTION_NAME] . '" ' . $this->options[self::OPTION_TYPE]->value;
         switch ($this->options[self::OPTION_TYPE]) {
             case DataType::VARCHAR:
             case DataType::CHARACTER:
