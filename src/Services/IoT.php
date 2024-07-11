@@ -31,7 +31,7 @@ class IoT
     {
     }
 
-    public function initTable(int $shards): PromiseInterface
+    public function initTable(?int $shards = null, array $options = []): PromiseInterface
     {
         $table = new Table();
         $table
@@ -57,6 +57,9 @@ class IoT
             )
             ->shards($shards)
             ->partitionedBy($partitionField);
+        foreach ($options as $key => $value) {
+            $table->setOption($key, $value);
+        }
 
         return $this->client->query((string)$table);
     }

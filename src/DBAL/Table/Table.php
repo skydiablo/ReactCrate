@@ -56,7 +56,7 @@ class Table
         return $this;
     }
 
-    public function shards(int $shards): static
+    public function shards(?int $shards): static
     {
         $this->options[self::OPTION_SHARDS] = $shards;
         return $this;
