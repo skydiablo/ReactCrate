@@ -31,7 +31,7 @@ class IoT
     {
     }
 
-    public function initTable(int $shards = 4): PromiseInterface
+    public function initTable(int $shards): PromiseInterface
     {
         $table = new Table();
         $table
