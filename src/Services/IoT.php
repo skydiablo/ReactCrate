@@ -24,11 +24,14 @@ class IoT
      * @param Client $client
      * @param string $table
      */
-    public function __construct(protected Client $client, protected string $table = self::TABLE_NAME)
+    public function __construct(
+        protected Client $client,
+        protected string $table = self::TABLE_NAME
+    )
     {
     }
 
-    public function initTable(): PromiseInterface
+    public function initTable(int $shards = 4): PromiseInterface
     {
         $table = new Table();
         $table
@@ -52,6 +55,7 @@ class IoT
                 ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
                 ->generatedAlwaysAs(new DateTrunc(DateTruncInterval::month, $tsField))
             )
+            ->shards($shards)
             ->partitionedBy($partitionField);
 
         return $this->client->query((string)$table);

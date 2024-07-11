@@ -12,6 +12,7 @@ class Table
     protected const string OPTION_FIELDS = 'fields';
     protected const string OPTION_IF_NOT_EXISTS = 'if_not_exists';
     protected const string OPTION_PARTITIONED_BY = 'partitioned_by';
+    protected const string OPTION_SHARDS = 'shards';
 
 
     protected array $options = [];
@@ -54,14 +55,21 @@ class Table
         return $this;
     }
 
+    public function shards(int $shards): static
+    {
+        $this->options[self::OPTION_SHARDS] = $shards;
+        return $this;
+    }
+
     public function __toString(): string
     {
         $implodedFields = implode(', ', $this->options[self::OPTION_FIELDS] ?? []);
-        $query = sprintf('CREATE TABLE %s%s (%s) %s',
+        $query = sprintf('CREATE TABLE %s"%s" (%s) %s',
             ($this->options[self::OPTION_IF_NOT_EXISTS] ?? false) ? 'IF NOT EXISTS ' : '',
             $this->options[self::OPTION_TABLE_NAME],
             $implodedFields,
-            ($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? 'PARTITIONED BY ("' . $field->getName() . '")' : ''
+            (($shards = $this->options[self::OPTION_SHARDS] ?? null) ? sprintf('CLUSTERED INTO %d SHARDS ', $shards) : '') .
+            (($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? sprintf('PARTITIONED BY ("%s")', $field->getName()) : '')
         );
         return $query;
     }
