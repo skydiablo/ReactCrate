@@ -13,6 +13,7 @@ class Table
     protected const string OPTION_IF_NOT_EXISTS = 'if_not_exists';
     protected const string OPTION_PARTITIONED_BY = 'partitioned_by';
     protected const string OPTION_SHARDS = 'shards';
+    protected const string OPTION_OPTIONS = 'with_options';
 
 
     protected array $options = [];
@@ -61,6 +62,12 @@ class Table
         return $this;
     }
 
+    public function setOption(string $key, string $value): static
+    {
+        $this->options[self::OPTION_OPTIONS][$key] = $value;
+        return $this;
+    }
+
     public function __toString(): string
     {
         $implodedFields = implode(', ', $this->options[self::OPTION_FIELDS] ?? []);
@@ -69,9 +76,30 @@ class Table
             $this->options[self::OPTION_TABLE_NAME],
             $implodedFields,
             (($shards = $this->options[self::OPTION_SHARDS] ?? null) ? sprintf('CLUSTERED INTO %d SHARDS ', $shards) : '') .
-            (($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? sprintf('PARTITIONED BY ("%s")', $field->getName()) : '')
+            (($field = $this->options[self::OPTION_PARTITIONED_BY] ?? null) ? sprintf('PARTITIONED BY ("%s") ', $field->getName()) : '') .
+            (($options = $this->options[self::OPTION_OPTIONS] ?? null) ? sprintf('WITH (%s)', $this->renderOptions($options)) : '')
         );
         return $query;
+    }
+
+    protected function renderOptions(array $options): string
+    {
+        $result = '';
+        foreach ($options as $key => $value) {
+            $result .= sprintf(',"%s" = ', addslashes($key));
+            switch (true) {
+                case is_string($value):
+                    $result .= sprintf("'%s'", addslashes($value));
+                    break;
+                case is_numeric($value):
+                    $result .= preg_replace('![^\d\.\,]!', '', $value);
+                    break;
+                case is_bool($value):
+                    $result .= $value ? 'true' : 'false';
+                    break;
+            }
+        }
+        return ltrim($result, ',');
     }
 
 
