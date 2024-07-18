@@ -1,8 +1,9 @@
 <?php
 
-namespace SkyDiablo\ReactCrate\DataObject;
+namespace SkyDiablo\ReactCrate\DBAL\Table;
 
-use SkyDiablo\ReactCrate\DataObject\Enums\DataType;
+use SkyDiablo\ReactCrate\DBAL\Functions\FunctionDefinition;
+use SkyDiablo\ReactCrate\DBAL\Table\Enums\DataType;
 
 class TableField
 {
@@ -13,6 +14,9 @@ class TableField
     protected const string OPTION_LENGTH = 'length'; // int
     protected const string OPTION_PRIMARY_KEY = 'primary_key'; // bool
     protected const string OPTION_CONSTRAINT = 'constraint'; // string
+    protected const string OPTION_GENERATED_ALWAYS_AS = 'generated_always_as';
+    protected const string OPTION_AS = 'as';
+    protected const string OPTION_DEFAULT = 'default'; // mixed
 
     protected array $options;
 
@@ -67,9 +71,27 @@ class TableField
         return $this;
     }
 
+    public function generatedAlwaysAs(FunctionDefinition $function): self
+    {
+        $this->options[self::OPTION_GENERATED_ALWAYS_AS] = $function;
+        return $this;
+    }
+
+    public function as(string $value): self
+    {
+        $this->options[self::OPTION_AS] = $value;
+        return $this;
+    }
+
+    public function default(FunctionDefinition $value): self
+    {
+        $this->options[self::OPTION_DEFAULT] = $value;
+        return $this;
+    }
+
     public function __toString(): string
     {
-        $result = $this->options[self::OPTION_NAME] . ' ' . $this->options[self::OPTION_TYPE]->value;
+        $result = '"'.$this->options[self::OPTION_NAME] . '" ' . $this->options[self::OPTION_TYPE]->value;
         switch ($this->options[self::OPTION_TYPE]) {
             case DataType::VARCHAR:
             case DataType::CHARACTER:
@@ -80,17 +102,26 @@ class TableField
             case DataType::FLOAT_VECTOR:
                 //TODO: special case, not supported yet!
                 throw new \InvalidArgumentException($this->options[self::OPTION_TYPE]->value . ' currently not supported!');
-                break;
-            case DataType::NUMERIC:
+            case DataType::NUMERIC: //TODO: why is this type defined?
                 throw new \InvalidArgumentException(sprintf('Type "%s" is not supported as table field', $this->options[self::OPTION_TYPE]->name));
         }
         if (!($this->options[self::OPTION_NULLABLE] ?? true)) {
             $result .= ' NOT NULL';
         }
+
+        if ($this->options[self::OPTION_DEFAULT] ?? false) {
+            $result .= ' DEFAULT ' . $this->options[self::OPTION_DEFAULT];
+        } elseif ($this->options[self::OPTION_GENERATED_ALWAYS_AS] ?? false) {
+            $result .= ' GENERATED ALWAYS AS (' . $this->options[self::OPTION_GENERATED_ALWAYS_AS] . ')';
+        }
+
         if ($constraint = $this->options[self::OPTION_CONSTRAINT] ?? false) {
             $result .= ' CONSTRAINT ' . $constraint . ' PRIMARY KEY';
         } elseif ($this->options[self::OPTION_PRIMARY_KEY] ?? false) {
             $result .= ' PRIMARY KEY';
+        }
+        if ($this->options[self::OPTION_AS] ?? false) {
+            $result .= ' AS ' . $this->options[self::OPTION_AS];
         }
         return $result;
     }

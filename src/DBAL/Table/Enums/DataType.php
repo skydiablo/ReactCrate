@@ -1,6 +1,6 @@
 <?php
 
-namespace SkyDiablo\ReactCrate\DataObject\Enums;
+namespace SkyDiablo\ReactCrate\DBAL\Table\Enums;
 
 /**
  * @see https://cratedb.com/docs/crate/reference/en/latest/general/ddl/data-types.html

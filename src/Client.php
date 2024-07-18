@@ -51,7 +51,7 @@ class Client
      * @return array
      * @throws CrateResponseException
      */
-    protected function handleResponse(ResponseInterface $response)
+    protected function handleResponse(ResponseInterface $response): array
     {
         $dbResponse = json_decode($response->getBody()->getContents(), true);
 
