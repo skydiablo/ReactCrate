@@ -71,7 +71,7 @@ class IoT
 
     public function bulkAdd(BulkMeasurement $bulkMeasurement): PromiseInterface
     {
-        $now = \DateTimeImmutable::createFromFormat('U.u', microtime(true));
+        $now = \DateTimeImmutable::createFromFormat('U.u', sprintf('%F', microtime(true)));
         $query = sprintf(self::INSERT_QUERY, $this->table);
         $values = array_map(function (Measurement $measurement) use ($now) {
             return $this->gatherInsertData($measurement, $now);
