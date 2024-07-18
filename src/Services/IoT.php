@@ -44,7 +44,7 @@ class IoT
     {
         $query = sprintf(self::INSERT_QUERY, $this->table);
         $values = array_map(function (Measurement $measurement) {
-            return $this->gatherInsertData($measurement, fn() => new \DateTime());
+            return $this->gatherInsertData($measurement, fn() => \DateTimeImmutable::createFromFormat('U.u', microtime(true)));
         }, (array)$bulkMeasurement);
         return $this->client->query($query, $values);
     }
@@ -52,7 +52,7 @@ class IoT
     protected function gatherInsertData(Measurement $measurement, callable $timeFallback): array
     {
         return [
-            ($measurement->getTime() ?? $timeFallback())->setTimezone(new \DateTimeZone('UTC'))->format(\DateTimeInterface::W3C), // ts
+            ($measurement->getTime() ?? $timeFallback())->setTimezone(new \DateTimeZone('UTC'))->format(\DateTimeInterface::RFC3339_EXTENDED), // ts
             $measurement->getMeasurement(), // measurement
             json_encode($measurement->getTags(), JSON_PRESERVE_ZERO_FRACTION), // tags
             json_encode($measurement->getFields(), JSON_PRESERVE_ZERO_FRACTION) // fields
