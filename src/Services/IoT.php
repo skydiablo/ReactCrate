@@ -87,7 +87,7 @@ class IoT
 
     public function bulkAdd(BulkMeasurement $bulkMeasurement): PromiseInterface
     {
-        $now = new \DateTime();
+        $now = \DateTimeImmutable::createFromFormat('U.u', sprintf('%F', microtime(true)));
         $values = array_map(function (Measurement $measurement) use ($now) {
             return $this->gatherInsertData($measurement, $now);
         }, (array)$bulkMeasurement);
@@ -97,7 +97,7 @@ class IoT
     protected function gatherInsertData(Measurement $measurement, \DateTimeInterface $timeFallback): array
     {
         return [
-            ($measurement->getTime() ?? $timeFallback)->setTimezone(new \DateTimeZone('UTC'))->format(\DateTimeInterface::W3C), // ts
+            ($measurement->getTime() ?? $timeFallback)->setTimezone(new \DateTimeZone('UTC'))->format(\DateTimeInterface::RFC3339_EXTENDED), // ts
             $measurement->getMeasurement(), // measurement
             json_encode($measurement->getTags(), JSON_PRESERVE_ZERO_FRACTION), // tags
             json_encode($measurement->getFields(), JSON_PRESERVE_ZERO_FRACTION) // fields
