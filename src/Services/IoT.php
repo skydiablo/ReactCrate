@@ -18,7 +18,13 @@ class IoT
 {
 
     protected const string TABLE_NAME = 'iot';
-    protected const string INSERT_QUERY = 'INSERT INTO "doc"."%s" ("ts", "measurement", "tags", "fields") VALUES (?, ?, ?, ?)';
+    protected const string FIELD_TIMESTAMP = 'ts';
+    protected const string FIELD_MEASUREMENT = 'measurement';
+    protected const string FIELD_TAGS = 'tags';
+    protected const string FIELD_FIELDS = 'fields';
+    protected const string FIELD_PARTITION_FIELD = 'partition_field';
+
+    protected string $insertQuery;
 
     /**
      * @param Client $client
@@ -29,6 +35,10 @@ class IoT
         protected string $table = self::TABLE_NAME
     )
     {
+        $this->insertQuery = sprintf(
+            'INSERT INTO "doc"."%s" ("%s", "%s", "%s", "%s") VALUES (?, ?, ?, ?)',
+            $this->table, self::FIELD_TIMESTAMP, self::FIELD_MEASUREMENT, self::FIELD_TAGS, self::FIELD_FIELDS
+        );
     }
 
     public function initTable(?int $shards = null, array $options = []): PromiseInterface
@@ -38,20 +48,26 @@ class IoT
             ->name($this->table)
             ->ifNotExists(true)
             ->field($tsField = (new TableField())
-                ->name('ts')
+                ->name(self::FIELD_TIMESTAMP)
                 ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
                 ->nullable(false)
                 ->default(new CurrentTimestamp())
             )
             ->field((new TableField())
-                ->name('measurement')
+                ->name(self::FIELD_MEASUREMENT)
                 ->type(DataType::TEXT)
                 ->nullable(false)
             )
-            ->field((new TableField())->name('tags')->type(DataType::OBJECT))
-            ->field((new TableField())->name('fields')->type(DataType::OBJECT))
+            ->field((new TableField())
+                ->name(self::FIELD_TAGS)
+                ->type(DataType::OBJECT)
+            )
+            ->field((new TableField())
+                ->name(self::FIELD_FIELDS)
+                ->type(DataType::OBJECT)
+            )
             ->field($partitionField = (new TableField())
-                ->name('partition_field')
+                ->name(self::FIELD_PARTITION_FIELD)
                 ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
                 ->generatedAlwaysAs(new DateTrunc(DateTruncInterval::month, $tsField))
             )
@@ -72,11 +88,10 @@ class IoT
     public function bulkAdd(BulkMeasurement $bulkMeasurement): PromiseInterface
     {
         $now = new \DateTime();
-        $query = sprintf(self::INSERT_QUERY, $this->table);
         $values = array_map(function (Measurement $measurement) use ($now) {
             return $this->gatherInsertData($measurement, $now);
         }, (array)$bulkMeasurement);
-        return $this->client->query($query, $values);
+        return $this->client->query($this->insertQuery, $values);
     }
 
     protected function gatherInsertData(Measurement $measurement, \DateTimeInterface $timeFallback): array
