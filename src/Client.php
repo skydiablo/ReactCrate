@@ -5,6 +5,7 @@ namespace SkyDiablo\ReactCrate;
 use Psr\Http\Message\ResponseInterface;
 use React\Http\Browser;
 use React\Http\Message\ResponseException;
+use React\Promise\Promise;
 use React\Promise\PromiseInterface;
 use React\Socket\Connector;
 use SkyDiablo\ReactCrate\Exceptions\CrateResponseException;
@@ -46,19 +47,22 @@ class Client
 
     /**
      * @TODO handle data types and convert it to PHP equivalents
-     * @see // @see https://cratedb.com/docs/crate/reference/en/master/general/ddl/data-types.html
-     * @param array $dbResponse
-     * @return array
-     * @throws CrateResponseException
+     * @see  // @see https://cratedb.com/docs/crate/reference/en/master/general/ddl/data-types.html
+     *
+     * @param ResponseInterface $response
+     *
+     * @return PromiseInterface
      */
-    protected function handleResponse(ResponseInterface $response): array
+    protected function handleResponse(ResponseInterface $response): PromiseInterface
     {
-        $dbResponse = json_decode($response->getBody()->getContents(), true);
+        return new Promise(function (callable $resolve, callable $reject) use ($response) {
+            $dbResponse = json_decode($response->getBody()->getContents(), true);
 
-        if (isset($dbResponse['error'])) {
-            throw new CrateResponseException($dbResponse['error']['message'], $dbResponse['error']['code']);
-        }
-        return $dbResponse;
+            if (isset($dbResponse['error'])) {
+                $reject(new CrateResponseException($dbResponse['error']['message'], $dbResponse['error']['code']));
+            }
+            $resolve($dbResponse);
+        });
     }
 
     /**
