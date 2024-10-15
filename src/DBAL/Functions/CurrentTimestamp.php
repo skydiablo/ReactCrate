@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace SkyDiablo\ReactCrate\DBAL\Functions;
 
-use SkyDiablo\ReactCrate\DBAL\Functions\FunctionDefinition;
-
 class CurrentTimestamp implements FunctionDefinition
 {
 
@@ -17,7 +15,7 @@ class CurrentTimestamp implements FunctionDefinition
 
     public function __toString(): string
     {
-        return 'CURRENT_TIMESTAMP' . ($this->precision < 3 ? '(' . $this->precision . ')' : '');
+        return sprintf('CURRENT_TIMESTAMP(%d)', $this->precision);
     }
 
 }
