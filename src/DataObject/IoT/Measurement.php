@@ -6,12 +6,12 @@ namespace SkyDiablo\ReactCrate\DataObject\IoT;
 class Measurement
 {
 
-    protected \DateTimeInterface $time;
+    protected ?\DateTimeInterface $time;
     protected string $measurement;
     protected array $tags;
     protected array $fields;
 
-    public function __construct(\DateTimeInterface $time = null, string $measurement = '', array $tags = [], array $fields = [])
+    public function __construct(?\DateTimeInterface $time = null, string $measurement = '', array $tags = [], array $fields = [])
     {
         $this->time = $time;
         $this->measurement = $measurement;
@@ -19,7 +19,7 @@ class Measurement
         $this->fields = $fields;
     }
 
-    public function setTime(\DateTimeInterface $time): static
+    public function setTime(?\DateTimeInterface $time): static
     {
         $this->time = $time;
         return $this;
@@ -43,7 +43,7 @@ class Measurement
         return $this;
     }
 
-    public function getTime(): \DateTimeInterface
+    public function getTime(): ?\DateTimeInterface
     {
         return $this->time;
     }
