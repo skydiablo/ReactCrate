@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1982f65c2e6394efdc59e8d0256c71a4",
+    "content-hash": "93806b69dce59ae170bb12a138b368c1",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -384,22 +384,22 @@
         },
         {
             "name": "react/http",
-            "version": "v1.11.0",
+            "version": "3.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/http.git",
-                "reference": "8db02de41dcca82037367f67a2d4be365b1c4db9"
+                "reference": "fc5f0a6739ba4a10de3847bab4688c602e5fe948"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/http/zipball/8db02de41dcca82037367f67a2d4be365b1c4db9",
-                "reference": "8db02de41dcca82037367f67a2d4be365b1c4db9",
+                "url": "https://api.github.com/repos/reactphp/http/zipball/fc5f0a6739ba4a10de3847bab4688c602e5fe948",
+                "reference": "fc5f0a6739ba4a10de3847bab4688c602e5fe948",
                 "shasum": ""
             },
             "require": {
                 "evenement/evenement": "^3.0 || ^2.0 || ^1.0",
                 "fig/http-message-util": "^1.1",
-                "php": ">=5.3.0",
+                "php": ">=7.1",
                 "psr/http-message": "^1.0",
                 "react/event-loop": "^1.2",
                 "react/promise": "^3.2 || ^2.3 || ^1.2.1",
@@ -410,11 +410,12 @@
                 "clue/http-proxy-react": "^1.8",
                 "clue/reactphp-ssh-proxy": "^1.4",
                 "clue/socks-react": "^1.4",
-                "phpunit/phpunit": "^9.6 || ^5.7 || ^4.8.36",
-                "react/async": "^4.2 || ^3 || ^2",
+                "phpunit/phpunit": "^9.6 || ^7.5",
+                "react/async": "^4.2 || ^3",
                 "react/promise-stream": "^1.4",
                 "react/promise-timer": "^1.11"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -463,7 +464,7 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/http/issues",
-                "source": "https://github.com/reactphp/http/tree/v1.11.0"
+                "source": "https://github.com/reactphp/http/tree/3.x"
             },
             "funding": [
                 {
@@ -471,28 +472,27 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2024-11-20T15:24:08+00:00"
+            "time": "2024-11-25T18:14:29+00:00"
         },
         {
             "name": "react/promise",
-            "version": "v3.2.0",
+            "version": "v2.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/promise.git",
-                "reference": "8a164643313c71354582dc850b42b33fa12a4b63"
+                "reference": "1a8460931ea36dc5c76838fec5734d55c88c6831"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/promise/zipball/8a164643313c71354582dc850b42b33fa12a4b63",
-                "reference": "8a164643313c71354582dc850b42b33fa12a4b63",
+                "url": "https://api.github.com/repos/reactphp/promise/zipball/1a8460931ea36dc5c76838fec5734d55c88c6831",
+                "reference": "1a8460931ea36dc5c76838fec5734d55c88c6831",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1.0"
+                "php": ">=5.4.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "1.10.39 || 1.4.10",
-                "phpunit/phpunit": "^9.6 || ^7.5"
+                "phpunit/phpunit": "^9.6 || ^5.7 || ^4.8.36"
             },
             "type": "library",
             "autoload": {
@@ -536,7 +536,7 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/promise/issues",
-                "source": "https://github.com/reactphp/promise/tree/v3.2.0"
+                "source": "https://github.com/reactphp/promise/tree/v2.11.0"
             },
             "funding": [
                 {
@@ -544,7 +544,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2024-05-24T10:39:05+00:00"
+            "time": "2023-11-16T16:16:50+00:00"
         },
         {
             "name": "react/socket",
@@ -2333,10 +2333,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "react/http": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
