@@ -12,7 +12,7 @@ use SkyDiablo\ReactCrate\Services\IoT;
 
 class IoTTest extends TestCase
 {
-    private Client $clientMock;
+    private \PHPUnit\Framework\MockObject\MockObject|Client $clientMock;
     private IoT $iotService;
 
     protected function setUp(): void
@@ -27,7 +27,7 @@ class IoTTest extends TestCase
             ->method('query')
             ->willReturn($this->createMock(PromiseInterface::class));
 
-        $result = $this->iotService->initTable(3);
+        $result = $this->iotService->initTable();
         $this->assertInstanceOf(PromiseInterface::class, $result);
     }
 

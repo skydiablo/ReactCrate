@@ -27,12 +27,16 @@ class IoT
     protected string $insertQuery;
 
     /**
-     * @param Client $client
-     * @param string $table
+     * @param Client   $client
+     * @param string   $table
+     * @param int|null $shards
+     * @param array    $options
      */
     public function __construct(
         protected Client $client,
-        protected string $table = self::TABLE_NAME
+        protected string $table = self::TABLE_NAME,
+        protected ?int $shards = null,
+        protected array $options = []
     )
     {
         $this->insertQuery = sprintf(
@@ -41,7 +45,7 @@ class IoT
         );
     }
 
-    public function initTable(?int $shards = null, array $options = []): PromiseInterface
+    public function initTable(): PromiseInterface
     {
         $table = new Table();
         $table
@@ -71,9 +75,9 @@ class IoT
                 ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
                 ->generatedAlwaysAs(new DateTrunc(DateTruncInterval::month, $tsField))
             )
-            ->shards($shards)
+            ->shards($this->shards)
             ->partitionedBy($partitionField);
-        foreach ($options as $key => $value) {
+        foreach ($this->options as $key => $value) {
             $table->setOption($key, $value);
         }
 
