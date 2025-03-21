@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace SkyDiablo\ReactCrate\Services;
@@ -27,57 +28,63 @@ class IoT
     protected string $insertQuery;
 
     /**
-     * @param Client   $client
-     * @param string   $table
-     * @param int|null $shards
-     * @param array    $options
+     * @param Client $client
+     * @param string $table
      */
     public function __construct(
         protected Client $client,
         protected string $table = self::TABLE_NAME,
         protected ?int $shards = null,
-        protected array $options = []
-    )
-    {
+        protected array $options = [],
+    ) {
         $this->insertQuery = sprintf(
             'INSERT INTO "doc"."%s" ("%s", "%s", "%s", "%s") VALUES (?, ?, ?, ?)',
-            $this->table, self::FIELD_TIMESTAMP, self::FIELD_MEASUREMENT, self::FIELD_TAGS, self::FIELD_FIELDS
+            $this->table,
+            self::FIELD_TIMESTAMP,
+            self::FIELD_MEASUREMENT,
+            self::FIELD_TAGS,
+            self::FIELD_FIELDS,
         );
     }
 
-    public function initTable(): PromiseInterface
+    public function initTable(?int $shards = null, ?array $options = null): PromiseInterface
     {
         $table = new Table();
         $table
             ->name($this->table)
             ->ifNotExists(true)
-            ->field($tsField = (new TableField())
-                ->name(self::FIELD_TIMESTAMP)
-                ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
-                ->nullable(false)
-                ->default(new CurrentTimestamp())
+            ->field(
+                $tsField = (new TableField())
+                    ->name(self::FIELD_TIMESTAMP)
+                    ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
+                    ->nullable(false)
+                    ->default(new CurrentTimestamp()),
             )
-            ->field((new TableField())
-                ->name(self::FIELD_MEASUREMENT)
-                ->type(DataType::TEXT)
-                ->nullable(false)
+            ->field(
+                (new TableField())
+                    ->name(self::FIELD_MEASUREMENT)
+                    ->type(DataType::TEXT)
+                    ->nullable(false),
             )
-            ->field((new TableField())
-                ->name(self::FIELD_TAGS)
-                ->type(DataType::OBJECT)
+            ->field(
+                (new TableField())
+                    ->name(self::FIELD_TAGS)
+                    ->type(DataType::OBJECT),
             )
-            ->field((new TableField())
-                ->name(self::FIELD_FIELDS)
-                ->type(DataType::OBJECT)
+            ->field(
+                (new TableField())
+                    ->name(self::FIELD_FIELDS)
+                    ->type(DataType::OBJECT),
             )
-            ->field($partitionField = (new TableField())
-                ->name(self::FIELD_PARTITION_FIELD)
-                ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
-                ->generatedAlwaysAs(new DateTrunc(DateTruncInterval::month, $tsField))
+            ->field(
+                $partitionField = (new TableField())
+                    ->name(self::FIELD_PARTITION_FIELD)
+                    ->type(DataType::TIMESTAMP_WITHOUT_TIME_ZONE)
+                    ->generatedAlwaysAs(new DateTrunc(DateTruncInterval::month, $tsField)),
             )
-            ->shards($this->shards)
+            ->shards($shards ?? $this->shards)
             ->partitionedBy($partitionField);
-        foreach ($this->options as $key => $value) {
+        foreach (($options ?? $this->options) as $key => $value) {
             $table->setOption($key, $value);
         }
 
@@ -95,6 +102,7 @@ class IoT
         $values = array_map(function (Measurement $measurement) use ($now) {
             return $this->gatherInsertData($measurement, $now);
         }, (array)$bulkMeasurement);
+
         return $this->client->query($this->insertQuery, $values);
     }
 
@@ -104,7 +112,7 @@ class IoT
             ($measurement->getTime() ?? $timeFallback)->setTimezone(new \DateTimeZone('UTC'))->format(\DateTimeInterface::RFC3339_EXTENDED), // ts
             $measurement->getMeasurement(), // measurement
             json_encode($measurement->getTags(), JSON_PRESERVE_ZERO_FRACTION), // tags
-            json_encode($measurement->getFields(), JSON_PRESERVE_ZERO_FRACTION) // fields
+            json_encode($measurement->getFields(), JSON_PRESERVE_ZERO_FRACTION), // fields
         ];
     }
 }
