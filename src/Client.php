@@ -23,25 +23,37 @@ class Client
     public function __construct(string $host, array $connectorContext = [])
     {
         $this->connection = (new Browser(new Connector($connectorContext)))
-            ->withBase(rtrim($host, '/') . '/' . self::BASE_URL_PATH);
+            ->withBase(rtrim($host, '/').'/'.self::BASE_URL_PATH);
     }
 
     protected function defaultHeaders(array $headers = []): array
     {
         return $headers + [
-                'Content-Type' => 'application/json',
-                'Default-Schema' => self::DEFAULT_SCHEMA
+                'Content-Type'   => 'application/json',
+                'Default-Schema' => self::DEFAULT_SCHEMA,
             ];
     }
 
     protected function prepareStatement(string $statement, array $args = []): string
     {
+        // handle enum types
+        array_walk_recursive($args, function (&$value) {
+            if ($value instanceof \BackedEnum) {
+                $value = $value->value;
+            } elseif ($value instanceof \UnitEnum) {
+                $value = $value->name;
+            }
+        });
+
         $q = [
-            self::QUERY_PARAM_STATMENT => $statement,
-            ($args && is_array(reset($args))) ?
-                self::QUERY_PARAM_BULK_ARGUMENTS :
-                self::QUERY_PARAM_ARGUMENTS => $args
+            self::QUERY_PARAM_STATMENT      => $statement,
+            ($args && is_array(reset($args)))
+                ?
+                self::QUERY_PARAM_BULK_ARGUMENTS
+                :
+                self::QUERY_PARAM_ARGUMENTS => $args,
         ];
+
         return json_encode($q);
     }
 
@@ -61,25 +73,37 @@ class Client
             if (isset($dbResponse['error'])) {
                 $reject(new CrateResponseException($dbResponse['error']['message'], $dbResponse['error']['code']));
             }
+
+            // Convert rows to associative arrays with column names as keys
+            if (isset($dbResponse['cols']) && isset($dbResponse['rows'])) {
+                $columnNames = $dbResponse['cols'];
+                $dbResponse['rows'] = array_map(function($row) use ($columnNames) {
+                    return array_combine($columnNames, $row);
+                }, $dbResponse['rows']);
+            }
+
             $resolve($dbResponse);
         });
     }
 
     /**
      * @param string $statement
-     * @param array $arguments
+     * @param array  $arguments
+     *
      * @return PromiseInterface<array>
      */
     public function query(string $statement, array $arguments = []): PromiseInterface
     {
-
-        return $this->connection->post(
-            '?types', // "types", @see https://cratedb.com/docs/crate/reference/en/master/interfaces/http.html#column-types
-            $this->defaultHeaders(),
-            $this->prepareStatement($statement, $arguments)
-        )
-            ->then(fn(ResponseInterface $response) => $this->handleResponse($response))
-            ->catch(fn(ResponseException $e) => $this->handleResponse($e->getResponse()));
+        return $this->connection
+            ->post(
+                '?types', // "types", @see https://cratedb.com/docs/crate/reference/en/master/interfaces/http.html#column-types
+                $this->defaultHeaders(),
+                $this->prepareStatement($statement, $arguments),
+            )
+            ->then(
+                fn(ResponseInterface $response) => $this->handleResponse($response),
+                fn(ResponseException $e) => $this->handleResponse($e->getResponse()),
+            );
     }
 
 

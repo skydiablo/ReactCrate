@@ -13,7 +13,7 @@ composer require skydiablo/react-crate
 
 ## Anforderungen
 
-- PHP 8.0 oder höher
+- PHP 8.3 oder höher
 - CrateDB
 - ReactPHP
 
