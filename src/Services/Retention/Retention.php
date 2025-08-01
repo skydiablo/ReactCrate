@@ -133,6 +133,7 @@ class Retention
                                         'affected_rows' => $result['rowcount'] ?? 0,
                                     ];
                                 });
+                            break;
                         default:
                             // For future strategies (like ARCHIVE, COMPRESS, etc.)
                             $promises[] = resolve([
