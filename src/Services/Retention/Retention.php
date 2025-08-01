@@ -24,7 +24,7 @@ class Retention
         protected Client $client,
     ) {}
 
-    public function initTable()
+    public function initTable(): PromiseInterface
     {
         $table = new Table();
         $table
@@ -80,11 +80,16 @@ class Retention
         int $period,
         Strategy $strategy = Strategy::DELETE,
         string $schema = 'doc',
-    ) {
+        ?int $waitForNodes = null,
+    ): PromiseInterface {
         $sql = 'INSERT INTO '.self::TABLE_NAME.' ("table_schema", "table_name", "partition_column", "retention_period", "strategy") 
                 VALUES (?,?,?,?,?) 
                 ON CONFLICT ("table_schema", "table_name", "partition_column", "strategy") 
                 DO UPDATE SET "retention_period" = EXCLUDED."retention_period"';
+
+        if ($waitForNodes !== null) {
+            $sql .= ' WAIT FOR '.$waitForNodes;
+        }
 
         return $this->client->query($sql, [$schema, $table, $column, $period, $strategy]);
     }
