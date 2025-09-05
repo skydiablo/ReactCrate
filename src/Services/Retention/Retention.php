@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SkyDiablo\ReactCrate\Services\Retention;
 
 use DateTimeImmutable;
-use DateTimeInterface;
 use React\Promise\PromiseInterface;
 use SkyDiablo\ReactCrate\Client;
 use SkyDiablo\ReactCrate\DBAL\Functions\StaticString;
@@ -85,6 +84,7 @@ class Retention
                 VALUES (?,?,?,?,?) 
                 ON CONFLICT ("table_schema", "table_name", "partition_column", "strategy") 
                 DO UPDATE SET "retention_period" = EXCLUDED."retention_period"';
+
         return $this->client->query($sql, [$schema, $table, $column, $period, $strategy]);
     }
 

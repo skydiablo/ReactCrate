@@ -65,19 +65,25 @@ class Client
      *
      * @return PromiseInterface
      */
-    protected function handleResponse(ResponseInterface $response): PromiseInterface
+    protected function handleResponse(ResponseInterface $response, string $statement, array $arguments): PromiseInterface
     {
-        return new Promise(function (callable $resolve, callable $reject) use ($response) {
+        return new Promise(function (callable $resolve, callable $reject) use ($response, $statement, $arguments) {
             $dbResponse = json_decode($response->getBody()->getContents(), true);
 
             if (isset($dbResponse['error'])) {
-                $reject(new CrateResponseException($dbResponse['error']['message'], $dbResponse['error']['code']));
+                $message = sprintf(
+                    '%s [%s]: %s',
+                    $dbResponse['error']['message'],
+                    $statement,
+                    json_encode($arguments, JSON_PRESERVE_ZERO_FRACTION),
+                );
+                $reject(new CrateResponseException($message, $dbResponse['error']['code']));
             }
 
             // Convert rows to associative arrays with column names as keys
             if (isset($dbResponse['cols']) && isset($dbResponse['rows'])) {
                 $columnNames = $dbResponse['cols'];
-                $dbResponse['rows'] = array_map(function($row) use ($columnNames) {
+                $dbResponse['rows'] = array_map(function ($row) use ($columnNames) {
                     return array_combine($columnNames, $row);
                 }, $dbResponse['rows']);
             }
@@ -101,8 +107,9 @@ class Client
                 $this->prepareStatement($statement, $arguments),
             )
             ->then(
-                fn(ResponseInterface $response) => $this->handleResponse($response),
-                fn(ResponseException $e) => $this->handleResponse($e->getResponse()),
+                fn(ResponseInterface $response) => $this->handleResponse($response, $statement, $arguments),
+            )->catch(
+                fn(ResponseException $e) => $this->handleResponse($e->getResponse(), $statement, $arguments),
             );
     }
 
