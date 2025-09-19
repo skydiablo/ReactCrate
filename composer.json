@@ -16,6 +16,10 @@
     "require": {
         "react/http": "^3@dev"
     },
+    "suggest": {
+        "doctrine/dbal": "Required for using the Doctrine DBAL Driver integration with CrateDB.",
+        "react/async": "Required for synchronous execution in the Doctrine DBAL Driver."
+    },
     "require-dev": {
         "phpunit/phpunit": "^10.1"
     },
