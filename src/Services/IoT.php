@@ -111,8 +111,8 @@ class IoT
         return [
             ($measurement->getTime() ?? $timeFallback)->setTimezone(new \DateTimeZone('UTC'))->format(\DateTimeInterface::RFC3339_EXTENDED), // ts
             $measurement->getMeasurement(), // measurement
-            json_encode($measurement->getTags(), JSON_PRESERVE_ZERO_FRACTION), // tags
-            json_encode($measurement->getFields(), JSON_PRESERVE_ZERO_FRACTION), // fields
+            $measurement->getTags(), // tags
+            $measurement->getFields(), // fields
         ];
     }
 }

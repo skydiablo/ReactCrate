@@ -72,6 +72,10 @@ Use the following configuration to create a Doctrine DBAL connection:
 
 ```php
 use Doctrine\DBAL\DriverManager;
+use SkyDiablo\ReactCrate\Doctrine\DBAL\Types\TypeRegistry;
+
+// Register custom CrateDB types (call this once during bootstrap)
+TypeRegistry::registerTypes();
 
 $connectionParams = [
     'url' => 'crate://localhost:4200/doc', // or specify host, port, etc.
@@ -84,6 +88,9 @@ $connection = DriverManager::getConnection($connectionParams);
 // Now you can use $connection as usual with Doctrine DBAL
 $connection->executeQuery('SELECT * FROM your_table');
 ```
+
+**Important:** CrateDB returns TIMESTAMP values as millisecond timestamps (integers), but accepts datetime strings when writing. 
+The custom `crate_datetime` type handles this conversion automatically.
 
 Note: CrateDB uses HTTP for connections, and authentication might not be required. Adjust parameters accordingly.
 

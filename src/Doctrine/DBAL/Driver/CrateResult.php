@@ -22,7 +22,9 @@ class CrateResult implements Result
         if (!isset($this->result['rows'][$this->position])) {
             return false;
         }
-        return $this->result['rows'][$this->position++];
+        $row = $this->result['rows'][$this->position++];
+        // Convert associative array to numeric array
+        return array_values($row);
     }
 
     public function fetchAssociative(): array|false
@@ -36,7 +38,7 @@ class CrateResult implements Result
     public function fetchOne(): mixed
     {
         $row = $this->fetchNumeric();
-        return $row ? $row[0] : false;
+        return is_array($row) && count($row) > 0 ? $row[0] : false;
     }
 
     public function fetchAllNumeric(): array
@@ -56,7 +58,7 @@ class CrateResult implements Result
     public function fetchFirstColumn(): array
     {
         return array_map(function ($row) {
-            return $row[0] ?? null;
+            return reset($row) ?? null;
         }, $this->result['rows'] ?? []);
     }
 

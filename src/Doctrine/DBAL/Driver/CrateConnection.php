@@ -6,17 +6,14 @@ use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\ParameterType;
-use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
-use Doctrine\DBAL\Driver\Exception as DriverException;
 use React\Async;
-use SkyDiablo\ReactCrate\Doctrine\DBAL\Driver\CrateStatement;
-use SkyDiablo\ReactCrate\Doctrine\DBAL\Driver\CrateResult;
 use SkyDiablo\ReactCrate\Client;
+use SkyDiablo\ReactCrate\Doctrine\DBAL\Exceptions\NotSupportedException;
 
 /**
  * Connection wrapper for CrateDB in Doctrine DBAL.
  */
-class CrateConnection implements DriverConnection, ServerInfoAwareConnection
+class CrateConnection implements DriverConnection
 {
     private Client $client;
 
@@ -50,38 +47,34 @@ class CrateConnection implements DriverConnection, ServerInfoAwareConnection
         return $result['rowcount'] ?? 0;
     }
 
-    public function lastInsertId($name = null): false|string
+    public function lastInsertId(): int|string
     {
         // CrateDB does not support auto-increment IDs in the same way
-        throw new \RuntimeException('lastInsertId is not supported by CrateDB driver.');
+        throw new NotSupportedException(__METHOD__ . ' is not supported by CrateDB.');
     }
 
-    public function beginTransaction(): bool
+    public function beginTransaction(): void
     {
-        try {
-            $this->exec('BEGIN');
-            return true;
-        } catch (\Throwable $e) {
-            throw DriverException::convertExceptionDuringQuery($e, 'BEGIN');
-        }
+        return; // silent ignored
+//        throw new NotSupportedException(__METHOD__ . ' is not supported by CrateDB.');
     }
 
-    public function commit(): bool
+    public function commit(): void
     {
-        $this->exec('COMMIT');
-        return true;
+        return; // silent ignored
+//        throw new NotSupportedException(__METHOD__ . ' is not supported by CrateDB.');
     }
 
-    public function rollBack(): bool
+    public function rollBack(): void
     {
-        $this->exec('ROLLBACK');
-        return true;
+        return; // silent ignored
+//        throw new NotSupportedException(__METHOD__ . ' is not supported by CrateDB.');
     }
 
     public function getServerVersion(): string
     {
-        $result = Async\await($this->client->query('SELECT version[\'number\'] FROM sys.cluster'));
-        return $result['rows'][0][0] ?? 'unknown';
+        $result = Async\await($this->client->getStatus());
+        return $result['version']['number'] ?? 'unknown';
     }
 
     public function getNativeConnection(): Client

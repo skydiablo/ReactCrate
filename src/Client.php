@@ -34,6 +34,15 @@ class Client
             ];
     }
 
+    public function getStatus(): PromiseInterface
+    {
+        return $this->connection
+            ->get('/', $this->defaultHeaders())
+            ->then(
+                fn(ResponseInterface $response) => $this->handleResponse($response, 'getStatus', []),
+            );
+    }
+
     protected function prepareStatement(string $statement, array $args = []): string
     {
         // handle enum types
@@ -46,15 +55,15 @@ class Client
         });
 
         $q = [
-            self::QUERY_PARAM_STATMENT      => $statement,
+            self::QUERY_PARAM_STATMENT => $statement,
             ($args && is_array(reset($args)))
                 ?
                 self::QUERY_PARAM_BULK_ARGUMENTS
                 :
-                self::QUERY_PARAM_ARGUMENTS => $args,
+                self::QUERY_PARAM_ARGUMENTS => array_values($args),
         ];
 
-        return json_encode($q);
+        return json_encode($q, JSON_PRESERVE_ZERO_FRACTION);
     }
 
     /**
