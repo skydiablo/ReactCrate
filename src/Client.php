@@ -14,7 +14,7 @@ class Client
 {
 
     private const string BASE_URL_PATH = '_sql';
-    private const string QUERY_PARAM_STATMENT = 'stmt';
+    private const string QUERY_PARAM_STATEMENT = 'stmt';
     private const string QUERY_PARAM_ARGUMENTS = 'args';
     private const string QUERY_PARAM_BULK_ARGUMENTS = 'bulk_args';
     const string DEFAULT_SCHEMA = 'doc';
@@ -23,13 +23,13 @@ class Client
     public function __construct(string $host, array $connectorContext = [])
     {
         $this->connection = (new Browser(new Connector($connectorContext)))
-            ->withBase(rtrim($host, '/').'/'.self::BASE_URL_PATH);
+            ->withBase(rtrim($host, '/') . '/' . self::BASE_URL_PATH);
     }
 
     protected function defaultHeaders(array $headers = []): array
     {
         return $headers + [
-                'Content-Type'   => 'application/json',
+                'Content-Type' => 'application/json',
                 'Default-Schema' => self::DEFAULT_SCHEMA,
             ];
     }
@@ -46,15 +46,15 @@ class Client
         });
 
         $q = [
-            self::QUERY_PARAM_STATMENT      => $statement,
-            ($args && is_array(reset($args)))
-                ?
-                self::QUERY_PARAM_BULK_ARGUMENTS
-                :
-                self::QUERY_PARAM_ARGUMENTS => $args,
+            self::QUERY_PARAM_STATEMENT => $statement,
         ];
+        if ($args && is_array(reset($args))) {
+            $q += [self::QUERY_PARAM_BULK_ARGUMENTS => array_values($args)];
+        } else {
+            $q += [self::QUERY_PARAM_ARGUMENTS => $args];
+        }
 
-        return json_encode($q);
+        return json_encode($q, JSON_PRESERVE_ZERO_FRACTION);
     }
 
     /**
@@ -62,7 +62,8 @@ class Client
      * @see  // @see https://cratedb.com/docs/crate/reference/en/master/general/ddl/data-types.html
      *
      * @param ResponseInterface $response
-     *
+     * @param string $statement
+     * @param array $arguments
      * @return PromiseInterface
      */
     protected function handleResponse(ResponseInterface $response, string $statement, array $arguments): PromiseInterface
@@ -94,7 +95,7 @@ class Client
 
     /**
      * @param string $statement
-     * @param array  $arguments
+     * @param array $arguments
      *
      * @return PromiseInterface<array>
      */
