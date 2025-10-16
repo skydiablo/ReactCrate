@@ -34,6 +34,15 @@ class Client
             ];
     }
 
+    public function getStatus(): PromiseInterface
+    {
+        return $this->connection
+            ->get('/', $this->defaultHeaders())
+            ->then(
+                fn(ResponseInterface $response) => $this->handleResponse($response, 'getStatus', []),
+            );
+    }
+
     protected function prepareStatement(string $statement, array $args = []): string
     {
         // handle enum types
