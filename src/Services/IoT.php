@@ -115,4 +115,9 @@ class IoT
             $measurement->getFields(), // fields
         ];
     }
+
+    public function refreshTable() : PromiseInterface
+    {
+        return $this->client->refreshTable($this->table);
+    }
 }

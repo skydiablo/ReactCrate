@@ -123,5 +123,30 @@ class Client
             );
     }
 
+    /**
+     * Quote a table name for safe use in SQL queries
+     *
+     * @param string $tableName Table name to quote
+     *
+     * @return string Quoted table name
+     */
+    private function quoteTableName(string $tableName): string
+    {
+        return '"' . str_replace('"', '""', $tableName) . '"';
+    }
+
+    /**
+     * Refresh a table (CrateDB-specific operation)
+     *
+     * @param string $tableName Name of the table to refresh
+     *
+     * @return PromiseInterface<void>
+     */
+    public function refreshTable(string $tableName): PromiseInterface
+    {
+        $quotedTableName = $this->quoteTableName($tableName);
+        return $this->query("REFRESH TABLE {$quotedTableName}", []);
+    }
+
 
 }
