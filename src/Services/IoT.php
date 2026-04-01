@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SkyDiablo\ReactCrate\Services;
 
 use React\Promise\PromiseInterface;
-use SkyDiablo\ReactCrate\Client;
+use SkyDiablo\ReactCrate\ClientInterface;
 use SkyDiablo\ReactCrate\DataObject\IoT\BulkMeasurement;
 use SkyDiablo\ReactCrate\DataObject\IoT\Measurement;
 use SkyDiablo\ReactCrate\DBAL\Functions\CurrentTimestamp;
@@ -28,11 +28,13 @@ class IoT
     protected string $insertQuery;
 
     /**
-     * @param Client $client
+     * @param ClientInterface $client
      * @param string $table
+     * @param int|null $shards
+     * @param array $options
      */
     public function __construct(
-        protected Client $client,
+        protected ClientInterface $client,
         protected string $table = self::TABLE_NAME,
         protected ?int $shards = null,
         protected array $options = [],

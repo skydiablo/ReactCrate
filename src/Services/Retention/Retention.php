@@ -6,7 +6,7 @@ namespace SkyDiablo\ReactCrate\Services\Retention;
 
 use DateTimeImmutable;
 use React\Promise\PromiseInterface;
-use SkyDiablo\ReactCrate\Client;
+use SkyDiablo\ReactCrate\ClientInterface;
 use SkyDiablo\ReactCrate\DBAL\Functions\StaticString;
 use SkyDiablo\ReactCrate\DBAL\Table\Enums\DataType;
 use SkyDiablo\ReactCrate\DBAL\Table\Table;
@@ -20,7 +20,7 @@ class Retention
     protected const string TABLE_NAME = 'retention_policies';
 
     public function __construct(
-        protected Client $client,
+        protected ClientInterface $client,
     ) {}
 
     public function initTable(): PromiseInterface

@@ -5,19 +5,19 @@ namespace SkyDiablo\ReactCrate\Tests\Services;
 
 use PHPUnit\Framework\TestCase;
 use React\Promise\PromiseInterface;
-use SkyDiablo\ReactCrate\Client;
+use SkyDiablo\ReactCrate\ClientInterface;
 use SkyDiablo\ReactCrate\DataObject\IoT\BulkMeasurement;
 use SkyDiablo\ReactCrate\DataObject\IoT\Measurement;
 use SkyDiablo\ReactCrate\Services\IoT;
 
 class IoTTest extends TestCase
 {
-    private \PHPUnit\Framework\MockObject\MockObject|Client $clientMock;
+    private \PHPUnit\Framework\MockObject\MockObject|ClientInterface $clientMock;
     private IoT $iotService;
 
     protected function setUp(): void
     {
-        $this->clientMock = $this->createMock(Client::class);
+        $this->clientMock = $this->createMock(ClientInterface::class);
         $this->iotService = new IoT($this->clientMock);
     }
 
