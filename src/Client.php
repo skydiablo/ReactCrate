@@ -9,8 +9,9 @@ use React\Promise\Promise;
 use React\Promise\PromiseInterface;
 use React\Socket\Connector;
 use SkyDiablo\ReactCrate\Exceptions\CrateResponseException;
+use SkyDiablo\ReactCrate\Exceptions\InvalidIdentifierException;
 
-class Client
+class Client implements ClientInterface
 {
 
     private const string BASE_URL_PATH = '_sql';
@@ -124,15 +125,29 @@ class Client
     }
 
     /**
+     * @throws InvalidIdentifierException
+     */
+    private function quoteIdentifier(string $identifier): string
+    {
+        if ($identifier === '' || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+            throw InvalidIdentifierException::invalidSqlIdentifier($identifier);
+        }
+
+        return '"' . $identifier . '"';
+    }
+
+    /**
      * Quote a table name for safe use in SQL queries
      *
      * @param string $tableName Table name to quote
      *
      * @return string Quoted table name
+     * @throws InvalidIdentifierException
      */
     private function quoteTableName(string $tableName): string
     {
-        return '"' . str_replace('"', '""', $tableName) . '"';
+        $parts = explode('.', $tableName);
+        return implode('.', array_map(fn(string $part) => $this->quoteIdentifier($part), $parts));
     }
 
     /**
@@ -141,11 +156,12 @@ class Client
      * @param string $tableName Name of the table to refresh
      *
      * @return PromiseInterface<void>
+     * @throws InvalidIdentifierException
      */
     public function refreshTable(string $tableName): PromiseInterface
     {
         $quotedTableName = $this->quoteTableName($tableName);
-        return $this->query("REFRESH TABLE {$quotedTableName}", []);
+        return $this->query("REFRESH TABLE {$quotedTableName}");
     }
 
 
