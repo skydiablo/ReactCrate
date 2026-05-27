@@ -32,6 +32,22 @@ $client = new Client('http://localhost:4200');
 $iotService = new IoT($client);
 ```
 
+### Password authentication (HTTP Basic Auth)
+
+By default, the client assumes host-based (trust) authentication. When CrateDB requires username and password for HTTP clients, use `BasicAuthClient`:
+
+```php
+use SkyDiablo\ReactCrate\BasicAuthClient;
+
+$client = new BasicAuthClient(
+    'https://crate.example.com:4200',
+    'myuser',
+    'mypassword',
+);
+```
+
+For clusters, wrap each node client before passing them to `ClusterClient`.
+
  ### Tabelle initialisieren
 
  Bevor Sie Messungen hinzufügen, sollten Sie die Tabelle mit der Funktion `initTable` initialisieren. Diese Funktion erstellt die notwendige Tabelle in CrateDB, falls sie noch nicht existiert:
