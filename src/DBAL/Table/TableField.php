@@ -17,6 +17,7 @@ class TableField
     protected const string OPTION_GENERATED_ALWAYS_AS = 'generated_always_as';
     protected const string OPTION_AS = 'as';
     protected const string OPTION_DEFAULT = 'default'; // mixed
+    protected const string OPTION_ARRAY_ELEMENT_TYPE = 'array_element_type';
 
     protected array $options;
 
@@ -89,10 +90,22 @@ class TableField
         return $this;
     }
 
+    public function arrayElementType(DataType $elementType): self
+    {
+        $this->options[self::OPTION_ARRAY_ELEMENT_TYPE] = $elementType;
+        return $this;
+    }
+
     public function __toString(): string
     {
-        $result = '"'.$this->options[self::OPTION_NAME] . '" ' . $this->options[self::OPTION_TYPE]->value;
-        switch ($this->options[self::OPTION_TYPE]) {
+        $type = $this->options[self::OPTION_TYPE];
+        $result = '"'.$this->options[self::OPTION_NAME] . '" ';
+        if ($type === DataType::ARRAY && isset($this->options[self::OPTION_ARRAY_ELEMENT_TYPE])) {
+            $result .= 'ARRAY('.$this->options[self::OPTION_ARRAY_ELEMENT_TYPE]->value.')';
+        } else {
+            $result .= $type->value;
+        }
+        switch ($type) {
             case DataType::VARCHAR:
             case DataType::CHARACTER:
             case DataType::CHAR:

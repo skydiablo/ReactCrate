@@ -45,4 +45,14 @@ class TableFieldTest extends TestCase
         $field = TableField::create(DataType::VARCHAR, 'name');
         (string)$field; // Should throw exception because length is required
     }
+
+    public function testArrayWithElementType(): void
+    {
+        $field = TableField::create(DataType::ARRAY, 'capabilities')
+            ->arrayElementType(DataType::TEXT)
+            ->nullable(false);
+
+        $expected = '"capabilities" ARRAY(TEXT) NOT NULL';
+        $this->assertEquals($expected, (string) $field);
+    }
 } 
