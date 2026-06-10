@@ -14,7 +14,7 @@
         }
     ],
     "require": {
-        "react/http": "^3@dev"
+        "react/http": "^1.11 || ^3"
     },
     "suggest": {
         "doctrine/dbal": "Required for using the Doctrine DBAL Driver integration with CrateDB.",
