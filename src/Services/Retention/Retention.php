@@ -23,11 +23,16 @@ class Retention
         protected ClientInterface $client,
     ) {}
 
+    public function getTableName(): string
+    {
+        return self::TABLE_NAME;
+    }
+
     public function initTable(): PromiseInterface
     {
         $table = new Table();
         $table
-            ->name(self::TABLE_NAME)
+            ->name($this->getTableName())
             ->ifNotExists(true)
             ->field(
                 (new TableField())
@@ -80,7 +85,7 @@ class Retention
         Strategy $strategy = Strategy::DELETE,
         string $schema = 'doc',
     ): PromiseInterface {
-        $sql = 'INSERT INTO '.self::TABLE_NAME.' ("table_schema", "table_name", "partition_column", "retention_period", "strategy") 
+        $sql = 'INSERT INTO '.$this->getTableName().' ("table_schema", "table_name", "partition_column", "retention_period", "strategy") 
                 VALUES (?,?,?,?,?) 
                 ON CONFLICT ("table_schema", "table_name", "partition_column", "strategy") 
                 DO UPDATE SET "retention_period" = EXCLUDED."retention_period"';
@@ -102,7 +107,7 @@ class Retention
                 partition_column,
                 retention_period,
                 strategy
-            FROM ".self::TABLE_NAME."
+            FROM ".$this->getTableName()."
             WHERE strategy IN (".implode(',', $strategyValues).")";
 
         return $this->client
