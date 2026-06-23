@@ -6,6 +6,8 @@ use SkyDiablo\ReactCrate\ClientInterface;
 
 interface ClientSelectorInterface
 {
+    public const string EXCEPT_CLIENTS = 'except_clients';
+
     /**
      * @param ClientInterface[] $clients
      */

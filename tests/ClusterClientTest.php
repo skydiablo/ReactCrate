@@ -7,9 +7,13 @@ use PHPUnit\Framework\TestCase;
 use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 use SkyDiablo\ReactCrate\ClientInterface;
+use SkyDiablo\ReactCrate\ClientSelection\ClientSelectorInterface;
 use SkyDiablo\ReactCrate\ClientSelection\CustomClientSelector;
 use SkyDiablo\ReactCrate\ClientSelection\LoadClientSelector;
 use SkyDiablo\ReactCrate\ClusterClient;
+use SkyDiablo\ReactCrate\Exceptions\CrateResponseException;
+
+use function React\Promise\reject;
 
 class ClusterClientTest extends TestCase
 {
@@ -77,12 +81,124 @@ class ClusterClientTest extends TestCase
         $this->assertSame(2, $clientA->queryCalls);
         $this->assertSame(1, $clientB->queryCalls);
     }
+
+    public function testQueryExcludesClientsFromSelection(): void
+    {
+        $clientA = new FakeClient();
+        $clientB = new FakeClient();
+        $cluster = new ClusterClient([$clientA, $clientB]);
+
+        $cluster->query('SELECT 1', [ClientSelectorInterface::EXCEPT_CLIENTS => [$clientA]]);
+
+        $this->assertSame(0, $clientA->queryCalls);
+        $this->assertSame(1, $clientB->queryCalls);
+    }
+
+    public function testQueryFailsOverToNextClientOnConnectionFailure(): void
+    {
+        $clientA = new FakeClient();
+        $clientA->failQueryWithConnectionError = true;
+        $clientB = new FakeClient();
+        $cluster = new ClusterClient([$clientA, $clientB]);
+
+        $cluster->query('SELECT 1');
+
+        $this->assertSame(1, $clientA->queryCalls);
+        $this->assertSame(1, $clientB->queryCalls);
+    }
+
+    public function testQueryFailsOverWithLoadSelectorOnConnectionFailure(): void
+    {
+        $clientA = new FakeClient();
+        $clientA->failQueryWithConnectionError = true;
+        $clientB = new FakeClient();
+        $cluster = new ClusterClient([$clientA, $clientB], new LoadClientSelector());
+
+        $cluster->query('SELECT 1');
+
+        $this->assertSame(1, $clientA->queryCalls);
+        $this->assertSame(1, $clientB->queryCalls);
+    }
+
+    public function testQueryDoesNotFailOverOnCrateResponseException(): void
+    {
+        $clientA = new FakeClient();
+        $clientA->failQueryWithCrateResponseException = true;
+        $clientB = new FakeClient();
+        $cluster = new ClusterClient([$clientA, $clientB]);
+
+        $failed = false;
+        $cluster->query('SELECT 1')->catch(function () use (&$failed) {
+            $failed = true;
+        });
+
+        $this->assertTrue($failed);
+        $this->assertSame(1, $clientA->queryCalls);
+        $this->assertSame(0, $clientB->queryCalls);
+    }
+
+    public function testQueryRejectsWhenAllClientsFailWithConnectionError(): void
+    {
+        $clientA = new FakeClient();
+        $clientA->failQueryWithConnectionError = true;
+        $clientB = new FakeClient();
+        $clientB->failQueryWithConnectionError = true;
+        $cluster = new ClusterClient([$clientA, $clientB]);
+
+        $failed = false;
+        $cluster->query('SELECT 1')->catch(function () use (&$failed) {
+            $failed = true;
+        });
+
+        $this->assertTrue($failed);
+        $this->assertSame(1, $clientA->queryCalls);
+        $this->assertSame(1, $clientB->queryCalls);
+    }
+
+    public function testQueryDoesNotFailOverWhenMaxTriesIsReached(): void
+    {
+        $clientA = new FakeClient();
+        $clientA->failQueryWithConnectionError = true;
+        $clientB = new FakeClient();
+        $cluster = new ClusterClient([$clientA, $clientB], failoverMaxTries: 1);
+
+        $failed = false;
+        $cluster->query('SELECT 1')->catch(function () use (&$failed) {
+            $failed = true;
+        });
+
+        $this->assertTrue($failed);
+        $this->assertSame(1, $clientA->queryCalls);
+        $this->assertSame(0, $clientB->queryCalls);
+    }
+
+    public function testQueryStopsFailoverAtMaxTries(): void
+    {
+        $clientA = new FakeClient();
+        $clientA->failQueryWithConnectionError = true;
+        $clientB = new FakeClient();
+        $clientB->failQueryWithConnectionError = true;
+        $clientC = new FakeClient();
+        $clientC->failQueryWithConnectionError = true;
+        $cluster = new ClusterClient([$clientA, $clientB, $clientC], failoverMaxTries: 2);
+
+        $failed = false;
+        $cluster->query('SELECT 1')->catch(function () use (&$failed) {
+            $failed = true;
+        });
+
+        $this->assertTrue($failed);
+        $this->assertSame(1, $clientA->queryCalls);
+        $this->assertSame(1, $clientB->queryCalls + $clientC->queryCalls);
+    }
 }
 
 final class FakeClient implements ClientInterface
 {
     public int $queryCalls = 0;
     public int $refreshCalls = 0;
+    public bool $failQueryWithConnectionError = false;
+    public bool $failQueryWithCrateResponseException = false;
     /**
      * @var string[]
      */
@@ -102,6 +218,15 @@ final class FakeClient implements ClientInterface
     public function query(string $statement, array $arguments = []): PromiseInterface
     {
         $this->queryCalls++;
+
+        if ($this->failQueryWithConnectionError) {
+            return reject(new \RuntimeException('Connection to tcp://127.0.0.1:4200 failed: Connection refused (ECONNREFUSED)'));
+        }
+
+        if ($this->failQueryWithCrateResponseException) {
+            return reject(new CrateResponseException('relation unknown', 4041));
+        }
+
         $deferred = new Deferred();
         $this->queryDeferreds[] = $deferred;
 

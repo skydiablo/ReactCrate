@@ -4,6 +4,8 @@ namespace SkyDiablo\ReactCrate;
 
 use React\Promise\PromiseInterface;
 use SkyDiablo\ReactCrate\ClientSelection\ClientSelectorInterface;
+use SkyDiablo\ReactCrate\ClientSelection\ExceptClientsClientSelector;
+use SkyDiablo\ReactCrate\ClientSelection\FailoverClientSelector;
 use SkyDiablo\ReactCrate\ClientSelection\RoundRobinClientSelector;
 
 class ClusterClient implements ClientInterface
@@ -17,8 +19,11 @@ class ClusterClient implements ClientInterface
     /**
      * @param ClientInterface[] $clients
      */
-    public function __construct(array $clients, ?ClientSelectorInterface $selector = null)
-    {
+    public function __construct(
+        array $clients,
+        ?ClientSelectorInterface $selector = null,
+        ?int $failoverMaxTries = null,
+    ) {
         if ($clients === []) {
             throw new \InvalidArgumentException('ClusterClient requires at least one client.');
         }
@@ -30,7 +35,10 @@ class ClusterClient implements ClientInterface
         }
 
         $this->clients = array_values($clients);
-        $this->selector = $selector ?? new RoundRobinClientSelector();
+        $this->selector = new FailoverClientSelector(
+            new ExceptClientsClientSelector($selector ?? new RoundRobinClientSelector()),
+            $failoverMaxTries,
+        );
     }
 
     protected function selectClient(string $statement, array $arguments = []) : ClientInterface {

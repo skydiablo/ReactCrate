@@ -60,12 +60,17 @@ class LoadClientSelector implements ClientSelectorInterface
             $this->markRequestEnd($trackedClient);
         };
 
-        $wrappedClient = new class($client, $onStart, $onEnd) implements ClientInterface {
+        $wrappedClient = new class($client, $onStart, $onEnd) implements ClientInterface, DelegatesToClientInterface {
             public function __construct(
                 private readonly ClientInterface $client,
                 private readonly \Closure $onStart,
                 private readonly \Closure $onEnd
             ) {
+            }
+
+            public function getDelegatedClient(): ClientInterface
+            {
+                return $this->client;
             }
 
             public function getStatus(): \React\Promise\PromiseInterface
